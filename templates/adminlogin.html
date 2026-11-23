@@ -124,27 +124,47 @@
         </div>
     </div>
 
-    <script>
-        // ✅ Set your admin credentials
-        const adminUsername = "Archana";
-        const adminPassword = "AK@12345";
+    
+<script>
+    document.getElementById("login-form").addEventListener("submit", async function(e) {
+        e.preventDefault();
 
-        document.getElementById("login-form").addEventListener("submit", function(e) {
-            e.preventDefault();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
 
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
+        if (!username || !password) {
+            alert("Please enter both username and password.");
+            return;
+        }
 
-            if (username === adminUsername && password === adminPassword) {
-                alert("✅ Login successful! Redirecting...");
-                
-                // ✅ REDIRECT TO ADMIN DASHBOARD
+        try {
+            const response = await fetch("{{ url_for('adminlogin') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert("Login successful! Redirecting...");
                 window.location.href = "{{ url_for('admin_dashboard') }}";
-
             } else {
-                alert("❌ Invalid username or password. Access denied.");
+                alert(result.message || "Invalid username or password.");
             }
-        });
-    </script>
+
+        } catch (error) {
+            console.error("Admin login error:", error);
+            alert("Unable to connect to the server. Please try again.");
+        }
+    });
+</script>
+
 </body>
 </html>

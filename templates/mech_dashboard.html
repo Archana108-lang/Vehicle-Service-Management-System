@@ -233,11 +233,17 @@ async function saveEdit() {
 
     saveLocalMechanics(list);
 
-    await fetch("/api/mechanics", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(list)
-    });
+    await fetch(`/api/mechanics/${mech.id}`, {
+    method: "PUT",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        firstname: mech.firstname,
+        lastname: mech.lastname,
+        services: mech.services,
+        status: mech.status
+    })
+});
+   
 
     closeModal();
     renderMechanics();

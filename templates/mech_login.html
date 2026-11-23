@@ -113,29 +113,51 @@
     <p class="footer-text">© 2025 <span>AK Service</span>. All Rights Reserved.</p>
 </div>
 
+
+
 <script>
-    // ✅ Common login credentials for all mechanics
-    const VALID_MECH_ID = "mechanic";   // 🔑 Common ID
-    const VALID_PASSWORD = "AK@12345";  // 🔑 Common Password
+async function loginMechanic() {
+    const mechid = document.getElementById("mechid").value.trim();
+    const password = document.getElementById("password").value;
 
-    function loginMechanic() {
-        const mechid = document.getElementById("mechid").value.trim().toLowerCase();
-        const password = document.getElementById("password").value.trim();
-
-        // Validation check
-        if (!mechid || !password) {
-            alert("⚠️ Please enter both Mechanic ID and Password.");
-            return;
-        }
-
-        if (mechid === VALID_MECH_ID.toLowerCase() && password === VALID_PASSWORD) {
-            alert("✅ Login successful! Welcome to the Mechanic Dashboard.");
-            localStorage.setItem("loggedMechanic", mechid);
-            window.location.href = "/mech_dashboard";  // redirect to the dashboard
-        } else {
-            alert("❌ Invalid Mechanic ID or Password!");
-        }
+    if (!mechid || !password) {
+        alert("Please enter both Mechanic ID and Password.");
+        return;
     }
+
+    try {
+        const response = await fetch("/mech_login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+                mechid: mechid,
+                password: password
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert("Login successful!");
+            window.location.href = "/mech_dashboard";
+        } else {
+            alert(result.message || "Invalid Mechanic ID or Password!");
+        }
+
+    } catch (error) {
+        console.error("Mechanic login error:", error);
+        alert("Server error. Please try again.");
+    }
+}
+
+document.getElementById("password").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        loginMechanic();
+    }
+});
 </script>
 
 </body>
