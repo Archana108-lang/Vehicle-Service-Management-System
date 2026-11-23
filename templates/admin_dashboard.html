@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Vehicle Service</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #0a1a2f, #112b47, #1e3c5f);
+      color: #fff;
+      margin: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-right: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      color: #00d1ff;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar button {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      padding: 12px;
+      text-align: left;
+      border-radius: 10px;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .sidebar button:hover, .sidebar button.active {
+      background: rgba(0, 209, 255, 0.2);
+      color: #00d1ff;
+    }
+
+    .content {
+      flex-grow: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: 0.3s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      vertical-align: middle;
+    }
+
+    th {
+      color: #00d1ff;
+      font-weight: 600;
+    }
+
+    .logout-btn {
+      margin-top: auto;
+      background: #ff4b4b;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #ff6666;
+    }
+
+    /* === NEW: Mechanics avatars & action buttons === */
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.25);
+    }
+
+    .btn {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-edit {
+      background: rgba(0, 209, 255, 0.2);
+      color: #00d1ff;
+      margin-right: 6px;
+    }
+
+    .btn-delete {
+      background: rgba(255, 75, 75, 0.2);
+      color: #ff7a7a;
+    }
+
+    .btn-add {
+      background: rgba(0, 255, 170, 0.2);
+      color: #00ffb1;
+      margin-top: 10px;
+    }
+
+    /* === NEW: Simple modal for Add/Edit mechanic === */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal-backdrop.show { display: flex; }
+
+    .modal {
+      width: 95%;
+      max-width: 560px;
+      background: rgba(14, 26, 44, 0.98);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    .modal h3 {
+      margin: 0 0 16px 0;
+      color: #00d1ff;
+    }
+    .modal .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .modal label {
+      display: block;
+      font-size: 12px;
+      opacity: 0.85;
+      margin-bottom: 6px;
+    }
+    .modal input, .modal select, .modal textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      outline: none;
+    }
+    .modal textarea { min-height: 72px; resize: vertical; }
+    .modal .actions {
+      margin-top: 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .btn-cancel {
+      background: rgba(255,255,255,0.12);
+      color: #ddd;
+    }
+    .hint {
+      font-size: 12px;
+      opacity: 0.75;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>🧭 Admin Panel</h2>
+    <button class="active" data-section="dashboard">Dashboard</button>
+    <button data-section="customers">Customers</button>
+    <button data-section="mechanics">Mechanics</button>
+    <button data-section="services">Services</button>
+    <button data-section="bookings">Bookings</button>
+    <button data-section="feedback">Feedback</button>
+
+    <!-- Job Applicants Removed earlier -->
+    <button data-section="assignJobs">Assign Jobs</button>
+
+    <button class="logout-btn">Logout</button>
+  </div>
+
+  <div class="content">
+
+    <div class="section active" id="dashboard">
+      <h1>📊 Dashboard Overview</h1>
+      <div class="card-grid">
+        <div class="card"><h3>👥 Customers</h3><p id="countCustomers">0</p></div>
+        <div class="card"><h3>🧰 Mechanics</h3><p id="countMechanics">0</p></div>
+        <div class="card"><h3>🧾 Bookings</h3><p id="countBookings">0</p></div>
+        <div class="card"><h3>✅ Completed</h3><p id="countCompleted">0</p></div>
+        <div class="card"><h3>💸 Revenue</h3><p id="countRevenue">0</p></div>
+      </div>
+    </div>
+
+    <div class="section" id="customers">
+      <h1>👥 Customers</h1>
+      <table><tr><th>Name</th><th>Email</th><th>Phone</th><th>Vehicle</th></tr></table>
+    </div>
+
+    <div class="section" id="mechanics">
+      <h1>🧰 Mechanics</h1>
+      <!-- Updated table headers to include Profile, Services & Actions -->
+      <table id="mechanicsTable">
+        <tr>
+          <th>Profile</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Services</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </table>
+      <button class="btn btn-add" id="btnAddMechanic">+ Add Mechanic</button>
+      
+    </div>
+
+    <div class="section" id="services">
+      <h1>🛠 Manage Services</h1>
+      <div class="card-grid" id="servicesGrid"></div>
+    </div>
+
+    <div class="section" id="bookings">
+      <h1>📅 Booking Management</h1>
+      <table>
+        <tr>
+          <th>User</th>
+          <th>Vehicle Make</th>
+          <th>Vehicle Model</th>
+          <th>Service Type(s)</th>
+          <th>Service Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section" id="feedback">
+      <h1>💬 Customer Feedback</h1>
+      <table id="feedbackTable">
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Message</th>
+          <th>Rating</th>
+        </tr>
+      </table>
+    </div>
+
+   <div class="section" id="assignJobs">
+  <h1>👨‍🔧 Assign Jobs</h1>
+
+  <div style="
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 24px;
+  ">
+    <!-- Pending Bookings -->
+    <div style="
+      flex: 1 1 480px;
+      min-width: 420px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px;
+      overflow: auto;
+      max-height: 70vh;
+    ">
+      <h2 style="margin-bottom: 12px;">📋 Pending Bookings</h2>
+      <div style="overflow-x: auto;">
+        <table id="pendingBookingsTable" style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <th>User</th>
+            <th>Vehicle</th>
+            <th>Service</th>
+            <th>Date</th>
+            <th>Select</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mechanics -->
+    <div style="
+      flex: 1 1 480px;
+      min-width: 420px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px;
+      overflow: auto;
+      max-height: 70vh;
+    ">
+      <h2 style="margin-bottom: 12px;">🧰 Mechanics</h2>
+      <div style="overflow-x: auto;">
+        <table id="assignMechTable" style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <th>Profile</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Assign</th>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- === NEW: Add/Edit Mechanic Modal === -->
+  <div class="modal-backdrop" id="mechModalBackdrop">
+    <div class="modal">
+      <h3 id="mechModalTitle">Add Mechanic</h3>
+      <div class="form-row">
+        <div>
+          <label>First Name</label>
+          <input id="mf_firstname" type="text" placeholder="First name">
+        </div>
+        <div>
+          <label>Last Name</label>
+          <input id="mf_lastname" type="text" placeholder="Last name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Email</label>
+          <input id="mf_email" type="email" placeholder="email@example.com">
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="mf_phone" type="tel" placeholder="10-digit number">
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Username</label>
+          <input id="mf_username" type="text" placeholder="username">
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="mf_password" type="text" placeholder="password">
+        </div>
+      </div>
+      <div>
+        <label>Services (comma separated)</label>
+        <input id="mf_services" type="text" placeholder="Engine, Brakes, Electrical">
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Status</label>
+          <select id="mf_status">
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <div>
+          <label>Profile Picture</label>
+          <input id="mf_photo" type="file" accept="image/*">
+          <div class="hint">If left empty, the existing path is used (or default).</div>
+        </div>
+      </div>
+      <div>
+        <label>Existing / Default Photo Path (optional)</label>
+        <input id="mf_photo_path" type="text" placeholder="static/mech_profiles/your_image.jpg">
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-cancel" id="btnCancelMech">Cancel</button>
+        <button class="btn btn-add" id="btnSaveMech">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    // ✅ Form references (required for Save/Edit mechanic to work)
+const f_first = document.getElementById("mf_firstname");
+const f_last = document.getElementById("mf_lastname");
+const f_email = document.getElementById("mf_email");
+const f_phone = document.getElementById("mf_phone");
+const f_user = document.getElementById("mf_username");
+const f_pass = document.getElementById("mf_password");
+const f_services = document.getElementById("mf_services");
+const f_status = document.getElementById("mf_status");
+const f_photo_path = document.getElementById("mf_photo_path");
+const f_photo = document.getElementById("mf_photo");
+let uploadedPhotoBase64 = "";
+
+
+const mechModalBackdrop = document.getElementById("mechModalBackdrop");
+const mechModalTitle = document.getElementById("mechModalTitle");
+const btnCancelMech = document.getElementById("btnCancelMech");
+const btnSaveMech = document.getElementById("btnSaveMech");
+const btnAddMechanic = document.getElementById("btnAddMechanic");
+
+    const buttons = document.querySelectorAll(".sidebar button[data-section]");
+    const sections = document.querySelectorAll(".section");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const target = btn.getAttribute("data-section");
+        sections.forEach(sec => sec.classList.remove("active"));
+        document.getElementById(target).classList.add("active");
+
+        if (target === "dashboard") loadDashboardCounts();
+        if (target === "customers") loadCustomers();
+        if (target === "mechanics") renderMechanicsTable(); // modified to use local list
+        if (target === "bookings") loadBookings();
+        if (target === "services") loadServices();
+        if (target === "feedback") loadFeedback();
+      });
+    });
+
+    async function loadDashboardCounts() {
+  let customers = await (await fetch("/api/customers")).json();
+  let mechanics = await (await fetch("/api/mechanics")).json();
+  let bookings = await (await fetch("/api/admin/bookings")).json();
+
+  if (!Array.isArray(bookings)) bookings = Object.values(bookings);
+
+  document.getElementById("countCustomers").innerText = customers.length;
+  document.getElementById("countMechanics").innerText = mechanics.length;
+  document.getElementById("countBookings").innerText = bookings.length;
+
+  const completed = bookings.filter(b => b.status === "Completed").length;
+  document.getElementById("countCompleted").innerText = completed;
+  document.getElementById("countRevenue").innerText = "₹ " + (completed * 500);
+}
+
+    loadDashboardCounts();
+
+    async function loadCustomers() {
+      const res = await fetch("/api/customers");
+      let data = await res.json();
+      if (!Array.isArray(data)) data = Object.values(data);
+      const table = document.querySelector("#customers table");
+      let html = `<tr><th>Name</th><th>Email</th><th>Phone</th><th>Vehicle</th></tr>`;
+      data.forEach(u => {
+        html += `<tr>
+          <td>${u.firstname} ${u.lastname}</td>
+          <td>${u.email}</td>
+          <td>${u.phone}</td>
+          <td>${u.vehicle_type || "-"}</td>
+        </tr>`;
+      });
+      table.innerHTML = html;
+    }
+
+    const SERVICE_LIST = {
+      "Two Wheeler": ["Engine Oil Change","Brake Inspection","Battery Check","Chain & Sprocket Service","Tyre Replacement"],
+      "Three Wheeler": ["Engine Tuning","Brake Adjustment","Clutch Overhaul","Electrical System Check","Wheel Alignment"],
+      "Four Wheeler": ["Full Car Service","AC Repair","Suspension Check","Tyre Balancing","Battery Replacement"],
+      "Commercial Vehicle": ["Engine Overhaul","Transmission Service","Brake & Clutch Repair","Hydraulic Check","Tyre Retreading"],
+      "Other": ["General Checkup","Oil Change","Tyre Replacement","Battery Service"]
+    };
+
+    async function loadServices() {
+      const grid = document.getElementById("servicesGrid");
+      grid.innerHTML = "";
+
+      let bookings = await (await fetch("/api/admin/bookings")).json();
+      if (!Array.isArray(bookings)) bookings = Object.values(bookings);
+
+      Object.entries(SERVICE_LIST).forEach(([type, services]) => {
+        services.forEach(service => {
+          const count = bookings.filter(b => b.service_type === service).length;
+          grid.innerHTML += `
+            <div class="card">
+              <h3>${service}</h3>
+              <p><b>Category:</b> ${type}</p>
+              <p><b>Bookings:</b> ${count}</p>
+            </div>`;
+        });
+      });
+    }
+
+    setInterval(loadServices, 30000);
+    loadServices();
+
+    // === Bookings grouping unchanged from your latest version ===
+    async function loadBookings() {
+      let data = await (await fetch("/api/admin/bookings")).json();
+      if (!Array.isArray(data)) data = Object.entries(data || {});
+
+      let grouped = {};
+      data.forEach(([id, b]) => {
+        let key = `${b.user}_${b.service_date}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            user: b.user,
+            vehicle_make: b.vehicle_make,
+            vehicle_model: b.vehicle_model,
+            service_type: [b.service_type],
+            service_date: b.service_date,
+            status: b.status,
+            id: id
+          };
+        } else {
+          grouped[key].service_type.push(b.service_type);
+        }
+      });
+
+      const table = document.querySelector("#bookings table");
+      let html = `
+        <tr>
+          <th>User</th>
+          <th>Vehicle Make</th>
+          <th>Vehicle Model</th>
+          <th>Service Type(s)</th>
+          <th>Service Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>`;
+
+      Object.values(grouped).forEach(b => {
+        html += `
+        <tr>
+          <td>${b.user || "-"}</td>
+          <td>${b.vehicle_make || "-"}</td>
+          <td>${b.vehicle_model || "-"}</td>
+          <td>${b.service_type.join(", ")}</td>
+          <td>${b.service_date || "-"}</td>
+
+          <td>
+            <select onchange="updateStatus('${b.id}', this.value)">
+              <option ${b.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${b.status === "Approved" ? "selected" : ""}>Approved</option>
+              <option ${b.status === "Completed" ? "selected" : ""}>Completed</option>
+            </select>
+          </td>
+
+          <td><button onclick="deleteBooking('${b.id}')">Delete</button></td>
+        </tr>`;
+      });
+
+      table.innerHTML = html;
+    }
+
+  async function updateStatus(id, status) {
+  await fetch(`/api/admin/update_status/${id}`, {
+    method: "PUT", // ✅ Correct method
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(`✅ Status updated to ${status}`);
+      loadBookings();
+      loadDashboardCounts();
+      loadServices();
+    } else {
+      alert("⚠ Error updating status: " + (data.error || ""));
+    }
+  });
+}
+
+
+    async function deleteBooking(id) {
+      if (!confirm("Are you sure to delete this booking?")) return;
+      await fetch(`/api/delete_booking/${id}`, { method: "DELETE" });
+      alert("🗑 Booking Deleted");
+      loadBookings();
+      loadDashboardCounts();
+      loadServices();
+    }
+
+    async function loadFeedback() {
+      let data = await (await fetch("/api/feedbacks")).json();
+      if (!Array.isArray(data)) data = Object.values(data);
+
+      let table = document.getElementById("feedbackTable");
+      let html = `
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Message</th>
+        <th>Rating</th>
+      </tr>`;
+
+      data.forEach(f => {
+        html += `
+        <tr>
+          <td>${f.name}</td>
+          <td>${f.email}</td>
+          <td>${f.message}</td>
+          <td>${f.rating}</td>
+        </tr>`;
+      });
+
+      table.innerHTML = html;
+    }
+
+    document.querySelector(".logout-btn").onclick = () => {
+      window.location.href = "/home1";
+    };
+
+    /* ===============================
+   MECHANICS – FIREBASE CRUD
+   =============================== */
+
+let currentEditID = null;
+
+// ✅ Load mechanic list from Firebase
+async function renderMechanicsTable() {
+  const res = await fetch("/api/mechanics");
+  const data = await res.json();
+
+  const table = document.getElementById("mechanicsTable");
+  let html = `
+    <tr>
+      <th>Profile</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Services</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>`;
+
+  data.forEach((m) => {
+    const name = `${m.firstname || ""} ${m.lastname || ""}`.trim();
+
+    const imgSrc = m.profile_pic || "static/mech_profiles/default.jpg";
+
+    html += `
+    <tr>
+      <td><img class="avatar" src="${imgSrc}"></td>
+      <td>${name}</td>
+      <td>${m.email}</td>
+      <td>${m.phone}</td>
+      <td>${Array.isArray(m.services) ? m.services.join(", ") : m.services}</td>
+      <td>${m.status}</td>
+      <td>
+  <button class="btn btn-edit" onclick="openMechanicModal('${m.id}')">Edit</button>
+  <button class="btn btn-delete" onclick="deleteMechanic('${m.id}')">Delete</button>
+</td>
+
+    </tr>`;
+  });
+
+  table.innerHTML = html;
+  loadDashboardCounts();
+}
+
+// ✅ Open modal
+function openMechanicModal(id = null) {
+  currentEditID = id;
+  mechModalBackdrop.classList.add("show");
+  uploadedPhotoBase64 = "";
+
+
+  if (!id) {
+    mechModalTitle.textContent = "Add Mechanic";
+    f_first.value = "";
+    f_last.value = "";
+    f_email.value = "";
+    f_phone.value = "";
+    f_user.value = "";
+    f_pass.value = "";
+    f_services.value = "";
+    f_status.value = "Active";
+    f_photo_path.value = "";
+    return;
+  }
+
+  mechModalTitle.textContent = "Edit Mechanic";
+
+  fetch("/api/mechanics")
+    .then(res => res.json())
+    .then(list => {
+      const mech = list.find(x => x.id === id);
+      if (!mech) return;
+
+      // ✅ Load existing values correctly
+      f_first.value = mech.firstname || "";
+      f_last.value = mech.lastname || "";
+      f_email.value = mech.email || "";
+      f_phone.value = mech.phone || "";
+      f_user.value = mech.username || "";
+      f_pass.value = mech.password || "";
+      f_services.value = Array.isArray(mech.services) ? mech.services.join(", ") : (mech.services || "");
+      f_status.value = mech.status;
+      f_photo_path.value = mech.profile_pic || "static/mech_profiles/default.jpg";
+    });
+}
+
+
+// ✅ Close modal
+btnCancelMech.addEventListener("click", () => {
+  mechModalBackdrop.classList.remove("show");
+});
+
+// ✅ Save mechanic to Firebase (Add or Update)
+btnSaveMech.addEventListener("click", async () => {
+  const payload = {
+    firstname: f_first.value.trim(),
+    lastname: f_last.value.trim(),
+    email: f_email.value.trim(),
+    phone: f_phone.value.trim(),
+    username: f_user.value.trim(),
+    password: f_pass.value.trim(),
+    services: f_services.value.split(",").map(s => s.trim()).filter(Boolean),
+    status: f_status.value,
+    profile_pic: uploadedPhotoBase64 || f_photo_path.value.trim() || "static/mech_profiles/default.jpg" // ✅ changed
+};
+
+  if (!currentEditID) {
+    await fetch("/api/mechanics", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    alert("✅ Mechanic Added");
+  } else {
+    await fetch(`/api/mechanics/${currentEditID}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(payload)
+    });
+    alert("✅ Mechanic Updated");
+  }
+
+  mechModalBackdrop.classList.remove("show");
+  renderMechanicsTable();
+});
+
+
+// ✅ Delete mechanic from Firebase
+window.deleteMechanic = async function(id) {
+  if (!confirm("Delete mechanic?")) return;
+
+  await fetch(`/api/mechanics/${id}`, { method: "DELETE" });
+  alert("✅ Mechanic Deleted");
+  renderMechanicsTable();
+};
+
+btnAddMechanic.addEventListener("click", () => openMechanicModal(null));
+
+// ✅ Convert uploaded photo to Base64
+f_photo.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        uploadedPhotoBase64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+
+// ✅ Load once at start
+renderMechanicsTable();
+
+
+    /* =====================================================
+   ASSIGN JOBS SECTION (Bookings → Mechanics)
+   Saves only in LocalStorage (not Firebase)
+   ===================================================== */
+
+// ✅ Firebase version of Assigned Jobs
+/* ✅ Firebase Assigned Jobs – FINAL WORKING VERSION */
+
+async function getAssignedJobs() {
+  let res = await fetch("/api/assigned_jobs");
+  return await res.json();
+}
+
+async function loadAssignJobs() {
+  let all = await (await fetch("/api/admin/bookings")).json();
+  if (!Array.isArray(all)) all = Object.entries(all || {});
+
+  let assigned = await getAssignedJobs();
+
+  let pendingTable = document.getElementById("pendingBookingsTable");
+  let html = `
+    <tr>
+      <th>User</th>
+      <th>Vehicle</th>
+      <th>Service</th>
+      <th>Date</th>
+      <th>Assign</th>
+    </tr>`;
+
+  all.forEach(([id, b]) => {
+    let already = assigned.find(j => j.booking_id === id);
+
+    html += `
+    <tr>
+      <td>${b.user}</td>
+      <td>${b.vehicle_make} ${b.vehicle_model}</td>
+      <td>${b.service_type}</td>
+      <td>${b.service_date}</td>
+      <td>
+  ${
+  already
+    ? `<span style="color:#00ffb1;">✅ Assigned to ${already.mechanic_name}</span>
+       ${
+         already.status !== "Completed"
+           ? `<button onclick="removeAssignment('${already.id}')">❌ Remove</button>`
+           : `<span style="color:#ffaa00;">✔ Completed</span>`
+       }`
+    : `<button onclick="selectBooking('${id}', '${b.service_type}', '${b.vehicle_make} ${b.vehicle_model}', '${b.user}')">Assign</button>`
+}
+
+</td>
+
+    </tr>`;
+  });
+
+  pendingTable.innerHTML = html;
+}
+
+let selectedBookingID = null;
+let selectedService = null;
+let selectedVehicle = null;
+let selectedCustomer = null;
+
+
+window.selectBooking = function(id, service, vehicle, customer) {
+    selectedBookingID = id;
+    selectedService = service;
+    selectedVehicle = vehicle;      // ✅ Required for passing vehicle info
+    selectedCustomer = customer;    // ✅ Required for passing customer info
+    alert("✅ Booking selected. Now choose a mechanic.");
+    renderAssignableMechanics();
+};
+
+
+
+async function renderAssignableMechanics() {
+  let mechTable = document.getElementById("assignMechTable");
+  let mechs = await (await fetch("/api/mechanics")).json();
+
+  let html = `
+  <tr>
+    <th>Profile</th>
+    <th>Name</th>
+    <th>Status</th>
+    <th>Assign</th>
+  </tr>`;
+
+  mechs.forEach(m => {
+    const name = `${m.firstname} ${m.lastname}`;
+    const img = m.profile_pic || "static/mech_profiles/default.jpg";
+    const skilled = Array.isArray(m.services) && m.services.includes(selectedService);
+
+    html += `
+    <tr>
+      <td><img class="avatar" src="${img}"></td>
+      <td>${name}</td>
+      <td>${m.status}</td>
+      <td>
+        ${
+          skilled
+            ? `<button onclick="assignToMechanic('${m.id}', '${name}')">Assign</button>`
+            : `<span style="opacity:0.4;">Not Skilled</span>`
+        }
+      </td>
+    </tr>`;
+  });
+
+  mechTable.innerHTML = html;
+}
+
+window.assignToMechanic = async function(mechID, mechName) {
+
+  if (!selectedBookingID || !selectedService) {
+    alert("⚠ Select a booking first!");
+    return;
+  }
+
+  // ✅ GET booking details properly
+  let bookings = await (await fetch("/api/admin/bookings")).json();
+  if (!Array.isArray(bookings)) bookings = Object.entries(bookings || {});
+  let book = bookings.find(([id]) => id === selectedBookingID);
+
+  if (!book) {
+    alert("Booking not found!");
+    return;
+  }
+
+  // ✅ Get mechanic email from Firebase list
+  let mechs = await (await fetch("/api/mechanics")).json();
+  let mech = mechs.find(m => m.id === mechID);
+
+ let payload = {
+    booking_id: selectedBookingID,
+    service: selectedService,
+    mechanic_id: mechID,
+    mechanic_name: mechName,
+    mechanic_email: mech.email,
+    vehicle: selectedVehicle,
+    customer: selectedCustomer,
+    assigned_at: new Date().toISOString(),
+    status: "Pending"
+};
+
+
+  await fetch("/api/assigned_jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  alert(`✅ Assigned to ${mechName}`);
+
+  selectedBookingID = null;
+  selectedService = null;
+  loadAssignJobs();
+};
+
+window.removeAssignment = async function(id) {
+  if (!confirm("Remove assignment?")) return;
+
+  await fetch(`/api/assigned_jobs/${id}`, { method: "DELETE" });
+
+  alert("✅ Assignment removed");
+  loadAssignJobs();
+};
+
+/* Load when Assign Jobs tab opens */
+document.querySelector("button[data-section='assignJobs']")
+  .addEventListener("click", loadAssignJobs);
+
+  // ✅ Assign Job Logic
+let selectedMechEmail = "";
+let selectedMechName = "";
+
+function openAssignJobModal(email, name) {
+  selectedMechEmail = email;
+  selectedMechName = name;
+  document.getElementById("assignJobModal").classList.add("show");
+}
+
+function closeAssignJob() {
+  document.getElementById("assignJobModal").classList.remove("show");
+}
+
+async function saveAssignedJob() {
+  const service = document.getElementById("assign_service").value;
+  const vehicle = document.getElementById("assign_vehicle").value;
+  const customer = document.getElementById("assign_customer").value;
+
+  if (!service || !vehicle || !customer) {
+    alert("⚠ Fill all fields");
+    return;
+  }
+
+  const job = {
+    mechanic_email: selectedMechEmail,
+    mechanic_name: selectedMechName,
+    service: service,
+    vehicle: vehicle,
+    customer: customer,
+    assigned_at: new Date().toLocaleString()
+  };
+
+  await fetch("/api/assigned_jobs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(job)
+  });
+
+  alert("✅ Job Assigned");
+  closeAssignJob();
+}
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mechanic Login | AK Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, #0a1a2f, #112b47, #1e3c5f);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Poppins', sans-serif;
+        color: #fff;
+    }
+    .login-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.4);
+        width: 380px;
+        padding: 35px 30px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+        animation: fadeIn 0.8s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(-10px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+    .login-container h2 {
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #00d1ff;
+        letter-spacing: 1px;
+    }
+    .login-container p {
+        font-size: 14px;
+        color: #c7d5e0;
+        margin-bottom: 20px;
+    }
+    .input-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .input-group label {
+        display: block;
+        font-size: 14px;
+        color: #bcd0e0;
+        margin-bottom: 5px;
+    }
+    .input-group input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        font-size: 15px;
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        transition: 0.3s;
+    }
+    .input-group input:focus {
+        background: rgba(255,255,255,0.15);
+        box-shadow: 0 0 0 2px #00d1ff;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #00d1ff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: #02b7e0;
+    }
+    .footer-text {
+        margin-top: 15px;
+        font-size: 13px;
+        color: #9bb2c5;
+    }
+    .footer-text span {
+        color: #00d1ff;
+        font-weight: 500;
+    }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Mechanic Login</h2>
+    <p>Access the mechanic dashboard</p>
+
+    <div class="input-group">
+        <label for="mechid">Mechanic ID</label>
+        <input type="text" id="mechid" placeholder="Enter your Mechanic ID">
+    </div>
+
+    <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password">
+    </div>
+
+    <button onclick="loginMechanic()">Login</button>
+
+    <p class="footer-text">© 2025 <span>AK Service</span>. All Rights Reserved.</p>
+</div>
+
+<script>
+    // ✅ Common login credentials for all mechanics
+    const VALID_MECH_ID = "mechanic";   // 🔑 Common ID
+    const VALID_PASSWORD = "AK@12345";  // 🔑 Common Password
+
+    function loginMechanic() {
+        const mechid = document.getElementById("mechid").value.trim().toLowerCase();
+        const password = document.getElementById("password").value.trim();
+
+        // Validation check
+        if (!mechid || !password) {
+            alert("⚠️ Please enter both Mechanic ID and Password.");
+            return;
+        }
+
+        if (mechid === VALID_MECH_ID.toLowerCase() && password === VALID_PASSWORD) {
+            alert("✅ Login successful! Welcome to the Mechanic Dashboard.");
+            localStorage.setItem("loggedMechanic", mechid);
+            window.location.href = "/mech_dashboard";  // redirect to the dashboard
+        } else {
+            alert("❌ Invalid Mechanic ID or Password!");
+        }
+    }
+</script>
+
+</body>
+</html>

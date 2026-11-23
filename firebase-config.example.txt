@@ -1,0 +1,8 @@
+Firebase Configuration
+
+1. Create a Firebase project.
+2. Enable Firebase Realtime Database.
+3. Download your own Firebase Admin SDK service-account JSON.
+4. Save it locally as service.json.
+5. Configure FIREBASE_DB_URL in app.py.
+6. Never upload service.json to GitHub.

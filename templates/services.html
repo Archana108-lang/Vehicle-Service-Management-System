@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Service Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0a0f1c 0%, #1a2a4c 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+    
+
+    header {
+      text-align: center;
+      padding: 20px;
+      position: relative;
+    }
+    header h1 { color: #00e0ff; text-shadow: 0 0 10px #00e0ff; }
+
+    .back-btn {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      color: #00e0ff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .back-btn:hover { color: #fff; }
+
+    .container {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(20,30,50,0.7);
+      border-radius: 12px;
+      padding: 25px;
+      text-align: center;
+      border: 1px solid rgba(0,224,255,0.2);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .card:hover { transform: translateY(-5px); border-color: rgba(0,224,255,0.5); }
+
+    .card i {
+      font-size: 3rem;
+      color: #00e0ff;
+      margin-bottom: 15px;
+    }
+    .card h3 { margin: 10px 0; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- Back Button for Services Page -->
+    <button class="back-btn" onclick="window.history.back()">←</button>
+    <h1>Our Services</h1>
+    <p>Choose your vehicle type to explore available services</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Vehicle Type Section -->
+    <section id="vehicle-types" class="grid">
+      <div class="card" onclick="showServices('two')">
+        <i class="fa-solid fa-motorcycle"></i>
+        <h3>Two-Wheeler</h3>
+        <p>Motorcycles, Scooters</p>
+      </div>
+      <div class="card" onclick="showServices('three')">
+        <i class="fa-solid fa-car-side"></i>
+        <h3>Three-Wheeler</h3>
+        <p>Auto-rickshaws, Tuk-Tuks</p>
+      </div>
+      <div class="card" onclick="showServices('four')">
+        <i class="fa-solid fa-car"></i>
+        <h3>Four-Wheeler</h3>
+        <p>Cars, Jeeps</p>
+      </div>
+      <div class="card" onclick="showServices('heavy')">
+        <i class="fa-solid fa-truck"></i>
+        <h3>Heavy Vehicle</h3>
+        <p>Buses, Trucks</p>
+      </div>
+    </section>
+
+    <!-- Service List Section -->
+    <section id="service-list" class="hidden">
+      <!-- Back Button inside Service List -->
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h2 id="service-title" style="color:#00e0ff;margin-bottom:20px;text-align:center;"></h2>
+      <div class="grid" id="services-container"></div>
+    </section>
+
+  </div>
+
+  <script>
+    const services = {
+      two: [
+        "Engine Oil Change",
+        "Brake Inspection",
+        "Battery Check",
+        "Chain & Sprocket Service",
+        "Tyre Replacement"
+      ],
+      three: [
+        "Engine Tuning",
+        "Brake Adjustment",
+        "Clutch Overhaul",
+        "Electrical System Check",
+        "Wheel Alignment"
+      ],
+      four: [
+        "Full Car Service",
+        "AC Repair",
+        "Suspension Check",
+        "Tyre Balancing",
+        "Battery Replacement"
+      ],
+      heavy: [
+        "Engine Overhaul",
+        "Transmission Service",
+        "Brake & Clutch Repair",
+        "Hydraulic Check",
+        "Tyre Retreading"
+      ]
+    };
+
+    function showServices(type) {
+      document.getElementById("vehicle-types").classList.add("hidden");
+      document.getElementById("service-list").classList.remove("hidden");
+      document.getElementById("service-title").textContent =
+        type === "two" ? "Two-Wheeler Services" :
+        type === "three" ? "Three-Wheeler Services" :
+        type === "four" ? "Four-Wheeler Services" :
+        "Heavy Vehicle Services";
+
+      const container = document.getElementById("services-container");
+      container.innerHTML = "";
+      services[type].forEach(service => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<i class="fa-solid fa-tools"></i><h3>${service}</h3>`;
+        container.appendChild(card);
+      });
+    }
+
+    function goBack() {
+      document.getElementById("vehicle-types").classList.remove("hidden");
+      document.getElementById("service-list").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>

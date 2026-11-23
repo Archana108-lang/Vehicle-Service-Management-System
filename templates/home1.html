@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vehicle Service Management System</title>
+  <link rel="stylesheet" href="https://mini-83577-default-rtdb.asia-southeast1.firebasedatabase.app/">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0f1c 0%, #1a2a4c 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ===== Enhanced Car Full-Page Background ===== */
+    .car-container {
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .car-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(0, 224, 255, 0.4) 0%, transparent 60%),
+        url("https://dm0qx8t0i9gc9.cloudfront.net/thumbnails/video/Vyh-jcp/videoblocks-animation-of-blue-futuristic-electric-car-blueprint-concept-car-design-3d-render-the-clip-is-loopable_bj71dibkg_thumbnail-1080_01.png") 
+        no-repeat center center/contain;
+      opacity: 0.4;
+      filter: brightness(1.3) drop-shadow(0 0 40px rgba(0,224,255,0.8));
+      animation: carGlow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes carGlow {
+      0% {
+        filter: brightness(1.3) drop-shadow(0 0 40px rgba(0,224,255,0.8));
+      }
+      100% {
+        filter: brightness(1.5) drop-shadow(0 0 60px rgba(0,224,255,1));
+      }
+    }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 250px;
+      background: rgba(10, 15, 28, 0.8);
+      backdrop-filter: blur(10px);
+      height: 100vh;
+      padding: 30px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 10;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #00e0ff;
+      color: #0a0f1c;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: #00bcd4;
+      transform: scale(1.1);
+    }
+
+    .logo {
+      margin-bottom: 50px;
+      text-align: center;
+    }
+
+    .logo h2 {
+      color: #00e0ff;
+      font-size: 1.5rem;
+      text-shadow: 0 0 15px rgba(0, 224, 255, 0.7);
+    }
+
+    .logo p {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 5px;
+    }
+
+    .nav-links {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 18px 25px;
+      color: #00e0ff;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .nav-link i {
+      font-size: 1.5rem;
+      margin-right: 15px;
+      width: 30px;
+      text-align: center;
+    }
+
+    .nav-link span {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .nav-link:hover {
+      background: rgba(0, 224, 255, 0.1);
+      padding-left: 30px;
+    }
+
+    .nav-link:hover::before,
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      background: #00e0ff;
+      box-shadow: 0 0 15px rgba(0, 224, 255, 0.8);
+    }
+
+    .nav-link.active {
+      background: rgba(0, 224, 255, 0.15);
+    }
+
+    /* ===== Main Content ===== */
+    .main-content {
+      flex: 1;
+      margin-left: 250px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    .welcome h1 {
+      font-size: 2.5rem;
+      color: #00e0ff;
+      text-shadow: 0 0 20px rgba(0, 224, 255, 0.6);
+      margin-bottom: 10px;
+    }
+
+    .welcome p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+
+    /* ===== Enhanced Glow Background Animation ===== */
+    .glow,
+    .glow-2 {
+      position: fixed;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      border-radius: 50%;
+      animation: rotate 20s linear infinite;
+      z-index: -1;
+    }
+
+    .glow {
+      right: -50%;
+      background: radial-gradient(circle, rgba(0, 224, 255, 0.15) 20%, transparent 70%);
+    }
+
+    .glow-2 {
+      left: -50%;
+      background: radial-gradient(circle, rgba(40, 150, 255, 0.15) 20%, transparent 70%);
+      animation-duration: 15s;
+      animation-direction: reverse;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== New Floating Elements ===== */
+    .floating-elements {
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .floating-element {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 224, 255, 0.2) 0%, transparent 70%);
+      filter: blur(5px);
+      animation: float 15s infinite linear;
+    }
+
+    .floating-element:nth-child(1) {
+      top: 20%;
+      left: 50%;
+      width: 80px;
+      height: 80px;
+      animation-duration: 25s;
+    }
+
+    .floating-element:nth-child(2) {
+      top: 60%;
+      left: 60%;
+      width: 40px;
+      height: 40px;
+      animation-duration: 20s;
+    }
+
+    .floating-element:nth-child(3) {
+      top: 40%;
+      left: 40%;
+      width: 60px;
+      height: 60px;
+      animation-duration: 30s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      33% {
+        transform: translate(30px, -50px) rotate(120deg);
+      }
+      66% {
+        transform: translate(-20px, 20px) rotate(240deg);
+      }
+      100% {
+        transform: translate(0, 0) rotate(360deg);
+      }
+    }
+
+    /* ===== New Tech Elements ===== */
+    .tech-grid {
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        linear-gradient(rgba(0, 224, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 224, 255, 0.1) 1px, transparent 1px);
+      background-size: 50px 50px;
+      z-index: -2;
+      opacity: 0.3;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 80px;
+      }
+      .sidebar .logo h2,
+      .sidebar .logo p,
+      .nav-link span {
+        display: none;
+      }
+      .nav-link {
+        justify-content: center;
+        padding: 20px;
+      }
+      .main-content {
+        margin-left: 80px;
+      }
+      .car-container,
+      .floating-elements,
+      .tech-grid {
+        left: 80px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="glow-2"></div>
+  <div class="tech-grid"></div>
+  <div class="car-container">
+    <div class="car-bg"></div>
+  </div>
+  <div class="floating-elements">
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+    <div class="floating-element"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="{{ url_for('home') }}" class="back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <div class="logo">
+      <h2>AK</h2>
+      <p>Vehicle Service</p>
+    </div>
+
+    <nav class="nav-links">
+      <a href="{{ url_for('open') }}" class="nav-link" id="customer-link">
+        <i class="fa-solid fa-user"></i>
+        <span>Customer</span>
+      </a>
+      <nav class="nav-links">
+       <a href="{{ url_for('adminlogin') }}" class="nav-link" id="admin-link">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Admin</span>
+      </a>
+      <a href="{{ url_for('mech_open') }}">
+        <div class="nav-link" id="mechanics-link">
+          <i class="fa-solid fa-screwdriver-wrench"></i>
+          <span>Mechanics</span>
+        </div>
+      </a>
+      <a href="{{ 'services' }}">
+        <div class="nav-link" id="services-link">
+          <i class="fa-solid fa-gears"></i>
+          <span>Services</span>
+        </div>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="welcome">
+      <h1>Vehicle Service Management System</h1>
+      <p>Efficiently manage your vehicle service needs</p>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback | Vehicle Service Management</title>
+  <!-- Font Awesome for the arrow icon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* (styles same as your working dark-styled version) */
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #0a0f1c, #1a2a4c);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .back-btn { 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #00e0ff;
+      color: #0a0f1c;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: #00bcd4;
+      transform: scale(1.1);
+    }
+
+    .feedback-container { 
+      background: rgba(20,30,50,0.8); 
+      border-radius: 15px; 
+      padding: 30px; 
+      width: 500px; 
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4); 
+    }
+    h1 { color: #00e0ff; text-align:center; margin-bottom:10px; }
+    p { text-align:center; margin-bottom:20px; color: rgba(255,255,255,0.7); }
+    .feedback-form { display:flex; flex-direction:column; gap:15px; }
+    input, textarea { padding:12px; border-radius:10px; border:none; outline:none; font-size:1rem; }
+    .star-rating { display:flex; justify-content:center; gap:8px; font-size:2rem; cursor:pointer; margin-bottom:10px; }
+    .star { color: rgba(255,255,255,0.4); transition: color 0.2s; }
+    .star.selected, .star.hover { color: #FFD700; text-shadow:0 0 10px #FFD700; }
+    .star.blink { animation: blink 0.4s ease-in-out 2; }
+    @keyframes blink { 0%,100%{color:#FFD700;text-shadow:0 0 10px #FFD700;} 50%{color:#fff;text-shadow:none;} }
+    button { background:#00e0ff; color:#0a0f1c; border:none; padding:12px; border-radius:30px; font-size:1.1rem; cursor:pointer; }
+    button:hover { background:#00b3cc; }
+    #feedback-items li { background: rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:10px; }
+    .message { text-align:center; font-weight:600; margin-bottom:12px; }
+    .success { color: #c7f9ef; }
+    .error { color: #ffb4b4; }
+  </style>
+</head>
+<body>
+  <div class="feedback-container">
+    <!-- Back button -->
+    <a href="{{ url_for('customerdashboard') }}" class="back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+
+    <h1>Feedback</h1>
+    <p>We value your opinion! Please rate and share your feedback.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="message {{ 'success' if category=='success' else 'error' }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{'feedback'}}" method="POST" class="feedback-form" id="feedbackForm">
+      <div class="star-rating" id="star-rating">
+        <span class="star" data-value="1">&#9733;</span>
+        <span class="star" data-value="2">&#9733;</span>
+        <span class="star" data-value="3">&#9733;</span>
+        <span class="star" data-value="4">&#9733;</span>
+        <span class="star" data-value="5">&#9733;</span>
+      </div>
+      <input type="hidden" name="rating" id="rating" required>
+
+      <input type="text" name="name" placeholder="Your Name" required>
+      <input type="email" name="email" placeholder="Your Email" required>
+      <textarea name="message" rows="5" placeholder="Write your feedback..." required></textarea>
+      <button type="submit">Submit Feedback</button>
+    </form>
+
+    <div id="feedback-list">
+      <h2>Recent Feedback</h2>
+      <ul id="feedback-items"></ul>
+    </div>
+  </div>
+
+  <script>
+    const stars = document.querySelectorAll(".star");
+    const ratingInput = document.getElementById("rating");
+
+    stars.forEach(star => {
+      star.addEventListener("mouseover", () => {
+        stars.forEach(s => s.classList.remove("hover"));
+        for (let i = 0; i < star.dataset.value; i++) stars[i].classList.add("hover");
+      });
+      star.addEventListener("mouseout", () => stars.forEach(s => s.classList.remove("hover")));
+      star.addEventListener("click", () => {
+        stars.forEach(s => s.classList.remove("selected","blink"));
+        for (let i = 0; i < star.dataset.value; i++) stars[i].classList.add("selected","blink");
+        ratingInput.value = star.dataset.value;
+        setTimeout(()=> stars.forEach(s => s.classList.remove("blink")), 800);
+      });
+    });
+
+    // Load recent feedback
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch("/api/feedback")
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("feedback-items");
+          list.innerHTML = "";
+          data.slice(0,5).forEach(item => {
+            const li = document.createElement("li");
+            const stars = "★".repeat(item.rating || 0);
+            li.innerHTML = `<span class="stars">${stars}</span><strong>${item.name}</strong> (${item.email})<br>${item.message}`;
+            list.appendChild(li);
+          });
+        }).catch(err => console.error("Could not load feedback:", err));
+    });
+  </script>
+</body>
+</html>

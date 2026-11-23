@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mechanic Dashboard | AK Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --primary: #00d1ff;
+    --primary-dark: #00a8cc;
+    --secondary: #1e3c5f;
+    --secondary-light: #2a4d7a;
+    --dark: #0a1a2f;
+    --light: #bcd0e0;
+    --success: #00ffb1;
+    --danger: #ff4b4b;
+    --warning: #ffca28;
+    --card-bg: rgba(255, 255, 255, 0.08);
+  }
+
+  body { background: linear-gradient(135deg, var(--dark), var(--secondary), var(--secondary-light)); color:white; font-family:Poppins; }
+
+  .modal-backdrop { position:fixed; inset:0; display:none; justify-content:center; align-items:center; background:rgba(0,0,0,0.7); }
+  .modal-backdrop.show { display:flex; animation:fadeIn .3s; }
+  .modal { background:#11283d; padding:25px; border-radius:12px; width:90%; max-width:450px; box-shadow:0 8px 18px rgba(0,0,0,.5); }
+  .modal input, .modal select { width:100%; background:#1b344c; border:none; padding:10px; border-radius:7px; color:white; }
+  .modal .actions button { padding:8px 16px; border:none; border-radius:6px; cursor:pointer; }
+
+  .btn-save { background:var(--primary); color:black; }
+  .btn-cancel { background:rgba(255,255,255,0.2); }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  header { width: 100%; padding: 20px 40px; background: rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+  header h2 { color: var(--primary); font-size: 1.8rem; }
+  .logout-btn { background: var(--danger); border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+  main { flex-grow: 1; padding: 30px; }
+  .dashboard-title { color: var(--primary); font-size: 1.8rem; font-weight: 700; }
+  .stats-container { display: flex; gap: 15px; margin-bottom: 30px; }
+  .stat-card { background: var(--card-bg); border-radius: 14px; padding: 20px; flex: 1; min-width: 200px; border-left: 4px solid var(--primary); }
+  .stat-value { font-size: 2.2rem; font-weight: 700; color: var(--primary); }
+
+  .mech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+  .mech-card { background: var(--card-bg); border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); }
+  .mech-card img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; margin-bottom: 10px; }
+  .actions { margin-top: 15px; display: flex; justify-content: center; gap: 10px; }
+  .btn-edit { background: rgba(0, 209, 255, 0.2); color: var(--primary); border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h2><i class="fas fa-tools"></i> Mechanic Dashboard</h2>
+  <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+</header>
+
+<main>
+  <h2 class="dashboard-title">All Mechanics</h2>
+  <div class="stats-container">
+    <div class="stat-card"><div class="stat-value" id="totalMechanics"></div><div>Total</div></div>
+    <div class="stat-card"><div class="stat-value" id="activeMechanics"></div><div>Active</div></div>
+    <div class="stat-card"><div class="stat-value" id="onLeaveMechanics"></div><div>On Leave</div></div>
+    <div class="stat-card"><div class="stat-value" id="inactiveMechanics"></div><div>Inactive</div></div>
+  </div>
+
+  <div id="mechGrid" class="mech-grid"></div>
+</main>
+
+<!-- ✅ EDIT MODAL -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <h3 style="color:var(--primary);">Edit Mechanic</h3>
+    <label>Name</label><input id="edit_name">
+    <label>Services</label><input id="edit_services">
+    <label>Status</label>
+    <select id="edit_status">
+      <option value="Active">Active</option>
+      <option value="On Leave">On Leave</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ LOGIN MODAL -->
+<div class="modal-backdrop" id="mechLoginModal">
+  <div class="modal">
+    <h3 style="color:var(--primary);"><i class="fas fa-lock"></i> Mechanic Login</h3>
+    <label>Email</label><input id="login_email" placeholder="Enter your email">
+    <label>Phone</label><input id="login_phone" placeholder="Enter phone">
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeLogin()">Cancel</button>
+      <button class="btn-save" onclick="verifyLogin()">Login</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const MECH_STORAGE_KEY = "mechanics_master";
+
+/* ✅ Load from LocalStorage */
+function getLocalMechanics() {
+    return JSON.parse(localStorage.getItem(MECH_STORAGE_KEY)) || [];
+}
+
+/* ✅ Save to LocalStorage */
+function saveLocalMechanics(list) {
+    localStorage.setItem(MECH_STORAGE_KEY, JSON.stringify(list));
+}
+
+/* ✅ Load mechanics — Firebase if LS empty */
+async function loadMechanics() {
+    // ✅ Always fetch latest from Firebase
+    let res = await fetch("/api/mechanics");
+    let fb = await res.json();
+
+    // ✅ Update LocalStorage copy so edit/login still works
+    saveLocalMechanics(fb);
+
+    return fb;
+}
+
+
+async function renderMechanics() {
+    const list = await loadMechanics();
+    const logged = JSON.parse(localStorage.getItem("logged_mechanic"));
+    const mechGrid = document.getElementById("mechGrid");
+    mechGrid.innerHTML = "";
+
+    list.forEach((m, i) => {
+        const card = document.createElement("div");
+        card.className = "mech-card";
+
+        const services = Array.isArray(m.services) ? m.services.join(", ") : m.services;
+
+        card.innerHTML = `
+            <img src="${m.profile_pic}">
+            <h4>${m.firstname} ${m.lastname}</h4>
+            <p><i class="fas fa-wrench"></i> ${services}</p>
+            <span>${m.status}</span>
+        `;
+
+        let buttons = "";
+        if (logged && logged.email === m.email && logged.phone === m.phone) {
+            buttons = `
+            <button class="btn-edit" onclick="openEdit(${i})">Edit</button>
+            <button class="btn-edit" onclick="showJobs()">View Jobs</button>`;
+        } else {
+            buttons = `<button class="btn-edit" onclick="login(${i})">Login</button>`;
+        }
+
+        card.innerHTML += `<div class="actions">${buttons}</div>`;
+        mechGrid.appendChild(card);
+    });
+
+    updateStats(list);
+}
+
+function updateStats(list) {
+    document.getElementById("totalMechanics").textContent = list.length;
+    document.getElementById("activeMechanics").textContent = list.filter(m=>m.status==="Active").length;
+    document.getElementById("onLeaveMechanics").textContent = list.filter(m=>m.status==="On Leave").length;
+    document.getElementById("inactiveMechanics").textContent = list.filter(m=>m.status==="Inactive").length;
+}
+
+/* ✅ LOGIN */
+function login(index) {
+    sessionStorage.setItem("selected_mech", index);
+    document.getElementById("mechLoginModal").classList.add("show");
+}
+
+function closeLogin() {
+    document.getElementById("mechLoginModal").classList.remove("show");
+}
+
+function verifyLogin() {
+    const email = document.getElementById("login_email").value.trim().toLowerCase();
+    const phone = document.getElementById("login_phone").value.trim();
+
+    const list = getLocalMechanics();
+    const i = sessionStorage.getItem("selected_mech");
+    const mech = list[i];
+
+    if (!mech) return alert("Mechanic not found");
+
+    if (email === mech.email.toLowerCase() && phone === mech.phone) {
+        localStorage.setItem("logged_mechanic", JSON.stringify({
+            email: mech.email,
+            phone: mech.phone
+        }));
+
+        closeLogin();
+        renderMechanics();
+        showJobs();
+    } else {
+        alert("❌ Incorrect email or phone");
+    }
+}
+
+/* ✅ EDIT */
+let editIndex = -1;
+
+function openEdit(i) {
+    const mech = getLocalMechanics()[i];
+    editIndex = i;
+
+    document.getElementById("edit_name").value = mech.firstname + " " + mech.lastname;
+    document.getElementById("edit_services").value = mech.services.join(", ");
+    document.getElementById("edit_status").value = mech.status;
+
+    document.getElementById("editModal").classList.add("show");
+}
+
+function closeModal() {
+    document.getElementById("editModal").classList.remove("show");
+}
+
+async function saveEdit() {
+    let list = getLocalMechanics();
+    let mech = list[editIndex];
+
+    const split = document.getElementById("edit_name").value.split(" ");
+    mech.firstname = split[0];
+    mech.lastname = split.slice(1).join(" ");
+    mech.services = document.getElementById("edit_services").value.split(",").map(s=>s.trim());
+    mech.status = document.getElementById("edit_status").value;
+
+    saveLocalMechanics(list);
+
+    await fetch("/api/mechanics", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(list)
+    });
+
+    closeModal();
+    renderMechanics();
+}
+
+/* ✅ SHOW ASSIGNED JOBS */
+async function showJobs() {
+    const logged = JSON.parse(localStorage.getItem("logged_mechanic"));
+    if (!logged) return;
+
+    let res = await fetch("/api/assigned_jobs");
+    let jobs = await res.json();
+
+    let myJobs = jobs.filter(j => j.mechanic_email?.toLowerCase() === logged.email.toLowerCase());
+
+    let html = "";
+    if (myJobs.length === 0) {
+        html = "<p style='color:#bcd0e0;'>No jobs assigned.</p>";
+    } else {
+        myJobs.forEach(j => {
+            html += `
+<div style="background:rgba(255,255,255,0.05);padding:10px;margin:8px;border-radius:8px;">
+  <p><b>Service:</b> ${j.service}</p>
+  <p><b>Vehicle:</b> ${j.vehicle}</p>
+  <p><b>Customer:</b> ${j.customer}</p>
+  <p><b>Assigned:</b> ${j.assigned_at}</p>
+
+  <p><b>Status:</b>
+  <select onchange="updateJobStatus('${j.id}', this.value)">
+    <option value="Pending" ${j.status === "Pending" ? "selected" : ""}>Pending</option>
+    <option value="In Progress" ${j.status === "In Progress" ? "selected" : ""}>In Progress</option>
+    <option value="Completed" ${j.status === "Completed" ? "selected" : ""}>Completed</option>
+  </select>
+</p>
+
+
+
+  
+</div>`;
+
+        });
+    }
+
+    document.getElementById("jobsContent").innerHTML = html;
+    document.getElementById("jobsModal").classList.add("show");
+}
+
+function closeJobs() {
+    document.getElementById("jobsModal").classList.remove("show");
+}
+async function updateJobStatus(jobID, newStatus) {
+    await fetch(`/api/assigned_jobs/${jobID}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+    });
+
+    alert("✅ Status updated!");
+    showJobs(); // refresh the modal instantly
+}
+async function updateJobStatus(id, newStatus) {
+    await fetch(`/api/assigned_jobs/${id}`, {
+        method: "PUT",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ status: newStatus })
+    });
+
+    alert("✅ Status updated to: " + newStatus);
+    showJobs(); // refresh
+}
+
+
+
+function logout() {
+    localStorage.removeItem("logged_mechanic");
+    location.reload();
+}
+
+renderMechanics();
+</script>
+
+<!-- ✅ JOBS MODAL (ONLY ONE) -->
+<div class="modal-backdrop" id="jobsModal">
+  <div class="modal">
+    <h3 style="color:var(--primary)">Assigned Jobs</h3>
+    <div id="jobsContent" style="max-height:250px; overflow-y:auto;"></div>
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeJobs()">Close</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drive Into Your Account</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background: linear-gradient(to bottom, #050720, #1a1c3c);
+      position: relative;
+    }
+    a {
+  text-decoration: none;
+}
+
+    
+    /* Night sky with stars */
+    .night-sky {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #050720, #1a1c3c);
+      z-index: -2;
+    }
+    
+    /* Moon */
+    .moon {
+      position: absolute;
+      top: 50px;
+      right: 50px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #f5f3ce;
+      box-shadow: 0 0 40px #f5f3ce, 0 0 80px #f5f3ceaa;
+      z-index: -1;
+    }
+    
+    .moon::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #d6d4b8;
+    }
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(183, 186, 192, 0.7);
+      border: 1px solid rgba(11, 83, 129, 0.573);
+      color: var(--light);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(175, 163, 163, 0.3);
+      text-decoration: none;
+    }
+    
+    .back-button:hover {
+      background: rgba(60, 60, 61, 0.9);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      color: var(--secondary);
+    }
+    .moon::after {
+      content: '';
+      position: absolute;
+      top: 35px;
+      left: 30px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #d6d4b8;
+    }
+    
+    /* Static road */
+    .highway {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      background: #222;
+      z-index: 1;
+    }
+    
+    /* Yellow road lines */
+    .highway::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 40px,
+        #ffd700 40px,
+        #ffd700 80px
+      );
+      transform: translateY(-50%);
+    }
+    
+    /* Moving vehicles */
+    .moving-vehicle {
+      position: absolute;
+      z-index: 3;
+      animation: drive 15s linear infinite;
+    }
+    
+    /* Different vehicle types */
+    .car {
+      width: 120px;
+      height: 50px;
+      animation-duration: 18s;
+    }
+    
+    .bus {
+      width: 180px;
+      height: 65px;
+      animation-duration: 22s;
+    }
+    
+    .truck {
+      width: 160px;
+      height: 70px;
+      animation-duration: 25s;
+    }
+    
+    .bike {
+      width: 70px;
+      height: 35px;
+      animation-duration: 15s;
+    }
+    
+    /* Left to right vehicles */
+    .ltr {
+      animation-direction: normal;
+    }
+    
+    /* Right to left vehicles */
+    .rtl {
+      animation-direction: reverse;
+    }
+    
+    .vehicle-body {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px 10px 5px 5px;
+      bottom: 0;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .vehicle-window {
+      position: absolute;
+      background: #70a1ff;
+      border-radius: 8px 8px 0 0;
+    }
+    
+    /* Car windows */
+    .car .vehicle-window {
+      width: 60%;
+      height: 40%;
+      top: 15%;
+      left: 20%;
+    }
+    
+    /* Bus windows */
+    .bus .vehicle-window {
+      width: 70%;
+      height: 35%;
+      top: 15%;
+      left: 15%;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .bus .window-pane {
+      width: 22%;
+      height: 100%;
+      background: #70a1ff;
+      border-radius: 5px;
+    }
+    
+    /* Truck windows */
+    .truck .vehicle-window {
+      width: 30%;
+      height: 35%;
+      top: 15%;
+      left: 10%;
+    }
+    
+    .truck .cargo {
+      position: absolute;
+      width: 60%;
+      height: 80%;
+      background: linear-gradient(to right, #e74c3c, #c0392b);
+      border-radius: 5px;
+      top: 0;
+      right: 0;
+    }
+    
+    /* Bike design */
+    .bike .vehicle-body {
+      border-radius: 20px 20px 5px 5px;
+    }
+    
+    .bike .seat {
+      position: absolute;
+      width: 25%;
+      height: 30%;
+      background: #2c3e50;
+      border-radius: 10px 10px 0 0;
+      top: 25%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .vehicle-wheel {
+      position: absolute;
+      background: #2f3542;
+      border-radius: 50%;
+      border: 2px solid #ffa502;
+      bottom: -8px;
+      animation: rotate 1.5s linear infinite;
+    }
+    
+    /* Car wheels */
+    .car .vehicle-wheel {
+      width: 20px;
+      height: 20px;
+    }
+    
+    .car .vehicle-wheel.front {
+      left: 15%;
+    }
+    
+    .car .vehicle-wheel.back {
+      right: 15%;
+    }
+    
+    /* Bus wheels */
+    .bus .vehicle-wheel {
+      width: 22px;
+      height: 22px;
+    }
+    
+    .bus .vehicle-wheel.front {
+      left: 15%;
+    }
+    
+    .bus .vehicle-wheel.back {
+      right: 15%;
+    }
+    
+    /* Truck wheels */
+    .truck .vehicle-wheel {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .truck .vehicle-wheel.front {
+      left: 12%;
+    }
+    
+    .truck .vehicle-wheel.back {
+      right: 12%;
+    }
+    
+    /* Double rear wheels for truck */
+    .truck .vehicle-wheel.rear-outer {
+      right: 12%;
+    }
+    
+    .truck .vehicle-wheel.rear-inner {
+      right: 20%;
+    }
+    
+    /* Bike wheels */
+    .bike .vehicle-wheel {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .bike .vehicle-wheel.front {
+      left: 25%;
+    }
+    
+    .bike .vehicle-wheel.back {
+      right: 25%;
+    }
+    
+    .vehicle-headlight {
+      position: absolute;
+      width: 8px;
+      height: 4px;
+      background: yellow;
+      border-radius: 2px;
+      bottom: 40%;
+    }
+    
+    .ltr .vehicle-headlight {
+      right: 5px;
+    }
+    
+    .rtl .vehicle-headlight {
+      left: 5px;
+      transform: rotate(180deg);
+    }
+    
+    .vehicle-taillight {
+      position: absolute;
+      width: 8px;
+      height: 4px;
+      background: red;
+      border-radius: 2px;
+      bottom: 40%;
+    }
+    
+    .ltr .vehicle-taillight {
+      left: 5px;
+    }
+    
+    .rtl .vehicle-taillight {
+      right: 5px;
+    }
+    
+    /* Motorcycle handlebar */
+    .bike .handlebar {
+      position: absolute;
+      width: 25px;
+      height: 2px;
+      background: #2f3542;
+      top: 15%;
+    }
+    
+    .bike.ltr .handlebar {
+      right: 5px;
+      transform: rotate(-20deg);
+    }
+    
+    .bike.rtl .handlebar {
+      left: 5px;
+      transform: rotate(20deg);
+    }
+    
+    @keyframes drive {
+      0% {
+        left: -20%;
+      }
+      100% {
+        left: 120%;
+      }
+    }
+    
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* City skyline */
+    .city {
+      position: absolute;
+      bottom: 200px;
+      left: 0;
+      width: 100%;
+      height: 250px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300"><rect x="0" y="150" width="50" height="150" fill="%23111"/><rect x="60" y="100" width="40" height="200" fill="%23111"/><rect x="110" y="120" width="60" height="180" fill="%23111"/><rect x="180" y="80" width="70" height="220" fill="%23111"/><rect x="260" y="130" width="50" height="170" fill="%23111"/><rect x="320" y="60" width="80" height="240" fill="%23111"/><rect x="410" y="110" width="40" height="190" fill="%23111"/><rect x="460" y="140" width="60" height="160" fill="%23111"/><rect x="530" y="90" width="50" height="210" fill="%23111"/><rect x="590" y="50" width="70" height="250" fill="%23111"/><rect x="670" y="120" width="40" height="180" fill="%23111"/><rect x="720" y="100" width="60" height="200" fill="%23111"/><rect x="790" y="70" width="80" height="230" fill="%23111"/><rect x="880" y="130" width="50" height="170" fill="%23111"/><rect x="940" y="90" width="40" height="210" fill="%23111"/><rect x="990" y="110" width="60" height="190" fill="%23111"/><rect x="1060" y="60" width="70" height="240" fill="%23111"/><rect x="1140" y="130" width="40" height="170" fill="%23111"/></svg>');
+      background-size: cover;
+      z-index: 0;
+    }
+    
+    /* Container styling */
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 350px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 10;
+      position: relative;
+    }
+    
+    h2 {
+      margin-bottom: 25px;
+      color: white;
+      font-size: 32px;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Button styling */
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    
+    button {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 50px;
+      background: rgba(13, 14, 14, 0.15);
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+      border: 2px solid #1e90ff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 
+                  0 0 10px rgba(30, 144, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    button:hover {
+      background: rgba(30, 144, 255, 0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 
+                  0 0 15px rgba(30, 144, 255, 0.7);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    /* Stars in the sky */
+    .stars {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 5s infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .container {
+        width: 85%;
+        padding: 30px 25px;
+      }
+      
+      .moon {
+        top: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+      }
+      
+      .moving-vehicle {
+        transform: scale(0.7);
+      }
+      
+      h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Back Button -->
+    <a href="{{ url_for('home1')}}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+  <!-- Night sky elements -->
+  <div class="night-sky"></div>
+  <div class="moon"></div>
+  <div class="stars" id="stars"></div>
+  <div class="city"></div>
+  <div class="highway"></div>
+  
+  <!-- Moving vehicles will be added dynamically -->
+  
+  <!-- Login container -->
+  <div class="container">
+    <h2>Drive Into Your Account</h2>
+    <div class="btn-container">
+      <a href="{{'login'}}"><button onclick="window.location.href='login.html'">
+       <i class="fas fa-key"></i> Login
+      </button></a>
+      <a href="{{'register'}}"><button onclick="window.location.href='register.html'">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Create stars
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 150; i++) {
+      const star = document.createElement('div');
+      star.classList.add('star');
+      const size = Math.random() * 3;
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 5 + 's';
+      star.style.animationDuration = (2 + Math.random() * 3) + 's';
+      starsContainer.appendChild(star);
+    }
+    
+    // Vehicle colors
+    const carColors = [
+      'linear-gradient(to right, #2ed573, #7bed9f)',
+      'linear-gradient(to right, #3742fa, #5352ed)',
+      'linear-gradient(to right, #ffa502, #ffb142)',
+      'linear-gradient(to right, #ff6b81, #ff4757)',
+      'linear-gradient(to right, #a55eea, #8854d0)',
+      'linear-gradient(to right, #45aaf2, #2d98da)'
+    ];
+    
+    const busColors = [
+      'linear-gradient(to right, #e74c3c, #c0392b)',
+      'linear-gradient(to right, #3498db, #2980b9)',
+      'linear-gradient(to right, #9b59b6, #8e44ad)'
+    ];
+    
+    const truckColors = [
+      'linear-gradient(to right, #7f8c8d, #95a5a6)',
+      'linear-gradient(to right, #34495e, #2c3e50)',
+      'linear-gradient(to right, #d35400, #e67e22)'
+    ];
+    
+    const bikeColors = [
+      'linear-gradient(to right, #e74c3c, #c0392b)',
+      'linear-gradient(to right, #27ae60, #2ecc71)',
+      'linear-gradient(to right, #3498db, #2980b9)',
+      'linear-gradient(to right, #9b59b6, #8e44ad)'
+    ];
+    
+    // Add vehicles dynamically
+    function createVehicle(type, direction) {
+      const vehicle = document.createElement('div');
+      vehicle.classList.add('moving-vehicle', type, direction);
+      
+      // Random properties
+      const bottom = 80 + Math.random() * 50;
+      const duration = 15 + Math.random() * 10; // Medium speed
+      const delay = Math.random() * 5;
+      
+      // Apply random properties
+      vehicle.style.bottom = bottom + 'px';
+      vehicle.style.animationDuration = duration + 's';
+      vehicle.style.animationDelay = delay + 's';
+      
+      if (direction === 'ltr') {
+        vehicle.style.left = -100 - Math.random() * 200 + 'px';
+      } else {
+        vehicle.style.left = 100 + Math.random() * 200 + 'px';
+      }
+      
+      // Create vehicle parts
+      const body = document.createElement('div');
+      body.classList.add('vehicle-body');
+      
+      // Set color based on vehicle type
+      let color;
+      switch(type) {
+        case 'car':
+          color = carColors[Math.floor(Math.random() * carColors.length)];
+          break;
+        case 'bus':
+          color = busColors[Math.floor(Math.random() * busColors.length)];
+          break;
+        case 'truck':
+          color = truckColors[Math.floor(Math.random() * truckColors.length)];
+          break;
+        case 'bike':
+          color = bikeColors[Math.floor(Math.random() * bikeColors.length)];
+          break;
+      }
+      body.style.background = color;
+      
+      // Append body
+      vehicle.appendChild(body);
+      
+      // Add windows for cars, buses, and trucks
+      if (type !== 'bike') {
+        const window = document.createElement('div');
+        window.classList.add('vehicle-window');
+        
+        if (type === 'bus') {
+          // Add multiple windows for bus
+          for (let i = 0; i < 4; i++) {
+            const pane = document.createElement('div');
+            pane.classList.add('window-pane');
+            window.appendChild(pane);
+          }
+        }
+        
+        vehicle.appendChild(window);
+      }
+      
+      // Add cargo area for trucks
+      if (type === 'truck') {
+        const cargo = document.createElement('div');
+        cargo.classList.add('cargo');
+        cargo.style.background = truckColors[Math.floor(Math.random() * truckColors.length)];
+        vehicle.appendChild(cargo);
+      }
+      
+      // Add seat for bikes
+      if (type === 'bike') {
+        const seat = document.createElement('div');
+        seat.classList.add('seat');
+        vehicle.appendChild(seat);
+      }
+      
+      // Add wheels
+      if (type === 'truck') {
+        // Front wheel
+        const wheel1 = document.createElement('div');
+        wheel1.classList.add('vehicle-wheel', 'front');
+        vehicle.appendChild(wheel1);
+        
+        // Double rear wheels
+        const wheel2 = document.createElement('div');
+        wheel2.classList.add('vehicle-wheel', 'rear-outer');
+        vehicle.appendChild(wheel2);
+        
+        const wheel3 = document.createElement('div');
+        wheel3.classList.add('vehicle-wheel', 'rear-inner');
+        vehicle.appendChild(wheel3);
+      } else {
+        // Front wheel
+        const wheel1 = document.createElement('div');
+        wheel1.classList.add('vehicle-wheel', 'front');
+        vehicle.appendChild(wheel1);
+        
+        // Rear wheel
+        const wheel2 = document.createElement('div');
+        wheel2.classList.add('vehicle-wheel', 'back');
+        vehicle.appendChild(wheel2);
+      }
+      
+      // Add lights
+      const headlight = document.createElement('div');
+      headlight.classList.add('vehicle-headlight');
+      
+      const taillight = document.createElement('div');
+      taillight.classList.add('vehicle-taillight');
+      
+      vehicle.appendChild(headlight);
+      vehicle.appendChild(taillight);
+      
+      // Add handlebar for bikes
+      if (type === 'bike') {
+        const handlebar = document.createElement('div');
+        handlebar.classList.add('handlebar');
+        vehicle.appendChild(handlebar);
+      }
+      
+      // Add to document
+      document.body.appendChild(vehicle);
+      
+      // Remove vehicle after animation completes
+      setTimeout(() => {
+        vehicle.remove();
+      }, (duration + delay) * 1000);
+      
+      return vehicle;
+    }
+    
+    // Create initial vehicles moving in both directions
+    for (let i = 0; i < 2; i++) {
+      // Left to right vehicles
+      const ltrType = ['car', 'bus', 'truck', 'bike'][Math.floor(Math.random() * 4)];
+      createVehicle(ltrType, 'ltr');
+      
+      // Right to left vehicles
+      const rtlType = ['car', 'bus', 'truck', 'bike'][Math.floor(Math.random() * 4)];
+      createVehicle(rtlType, 'rtl');
+    }
+    
+    // Continuously create new vehicles
+    setInterval(() => {
+      // Randomly decide direction and type
+      const direction = Math.random() > 0.5 ? 'ltr' : 'rtl';
+      const type = ['car', 'bus', 'truck', 'bike'][Math.floor(Math.random() * 4)];
+      
+      createVehicle(type, direction);
+    }, 2000);
+  </script>
+</body>
+</html>

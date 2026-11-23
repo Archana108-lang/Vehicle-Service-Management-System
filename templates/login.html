@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AK - Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+        :root {
+            --primary: rgba(25, 35, 45, 0.8);
+            --secondary: rgba(0, 200, 255, 0.95);
+            --accent: rgba(255, 70, 60, 0.95);
+            --light: rgba(255, 255, 255, 0.98);
+            --dark: rgba(15, 20, 25, 0.9);
+            --glass: rgba(25, 30, 35, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: rgba(0, 0, 0, 0.6);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+            overflow-x: hidden;
+            color: #fff;
+        }
+        /* Back Button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(30, 35, 40, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+        
+        .back-button:hover {
+            background: rgba(40, 45, 50, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            color: var(--secondary);
+        }
+        
+        /* Starry night sky */
+        .night-sky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #000000, #0a0a0a);
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+        
+        /* Moon */
+        .moon {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f5f3ce, #d8d0b0);
+            box-shadow: 0 0 40px rgba(255, 255, 210, 0.6),
+                        0 0 80px rgba(255, 255, 210, 0.4),
+                        0 0 120px rgba(255, 255, 210, 0.2);
+            z-index: -1;
+            animation: glow 4s ease-in-out infinite alternate;
+        }
+        
+        .moon::before {
+            content: "";
+            position: absolute;
+            top: 15px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                15px -10px 0 -3px rgba(0, 0, 0, 0.15),
+                30px 5px 0 -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 40px rgba(255, 255, 210, 0.6),
+                             0 0 80px rgba(255, 255, 210, 0.4),
+                             0 0 120px rgba(255, 255, 210, 0.2); }
+            to { box-shadow: 0 0 50px rgba(255, 255, 210, 0.7),
+                           0 0 100px rgba(255, 255, 210, 0.5),
+                           0 0 140px rgba(255, 255, 210, 0.3); }
+        }
+        
+        /* Road & Cars */
+        .road-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+        .road { position: absolute; bottom: 0; left: 0; width: 100%; height: 120px; background: linear-gradient(to bottom, #2a2a2a, #1a1a1a); }
+        .road::before { content:""; position:absolute; top:50%; left:0; width:100%; height:4px; background: repeating-linear-gradient(90deg,#ffcc00,#ffcc00 20px,transparent 20px,transparent 40px); transform:translateY(-50%); }
+        .car { position: absolute; font-size:36px; bottom:90px; text-shadow:2px 2px 8px rgba(0,0,0,0.7); filter:drop-shadow(0 0 5px rgba(0,200,255,0.7)); }
+        .car-1 { left:-50px; animation:carMove1 12s linear infinite; color:#ff3366; }
+        .car-2 { right:-50px; animation:carMove2 15s linear infinite; color:#00cc99; }
+        .car-3 { left:-70px; animation:carMove3 18s linear infinite; color:#ffcc00; }
+        .car-4 { right:-60px; animation:carMove4 20s linear infinite; color:#9d4edd; }
+        @keyframes carMove1 { 0%{transform:translateX(0)}100%{transform:translateX(calc(100vw + 100px))} }
+        @keyframes carMove2 { 0%{transform:translateX(0) rotateY(180deg)}100%{transform:translateX(calc(-100vw - 100px)) rotateY(180deg)} }
+        @keyframes carMove3 { 0%{transform:translateX(0)}50%{transform:translateX(calc(100vw + 100px))}51%{transform:translateX(calc(100vw + 100px)) rotateY(180deg)}100%{transform:translateX(-100px) rotateY(180deg)} }
+        @keyframes carMove4 { 0%{transform:translateX(0) rotateY(180deg)}50%{transform:translateX(calc(-100vw - 100px)) rotateY(180deg)}51%{transform:translateX(calc(-100vw - 100px))}100%{transform:translateX(100px)} }
+        
+        /* City buildings */
+        .city { position:absolute; bottom:120px; left:0; width:100%; height:180px; }
+        .building { position:absolute; bottom:0; background:#000; border:1px solid rgba(30,30,30,0.8); }
+        .building-1{left:2%;width:40px;height:120px;}
+        .building-2{left:8%;width:60px;height:160px;}
+        .building-3{left:16%;width:50px;height:140px;}
+        .building-4{left:24%;width:70px;height:170px;}
+        .building-5{left:34%;width:55px;height:150px;}
+        .building-6{right:34%;width:65px;height:160px;}
+        .building-7{right:24%;width:45px;height:130px;}
+        .building-8{right:16%;width:75px;height:180px;}
+        .building-9{right:8%;width:60px;height:150px;}
+        .building-10{right:2%;width:50px;height:140px;}
+        
+        /* Form container & styles */
+        .auth-container { background:var(--glass); border:1px solid var(--glass-border); border-radius:20px; box-shadow:0 15px 40px var(--glass-shadow); backdrop-filter:blur(12px); width:100%; max-width:450px; margin:20px auto; color:#fff; }
+        .auth-header { background:linear-gradient(135deg,var(--dark),var(--primary)); color:var(--light); padding:25px; text-align:center; border-top-left-radius:20px; border-top-right-radius:20px; }
+        .auth-header h1{ background:linear-gradient(to right,#00ccff,#00ffaa); background-clip: text;        /* May not work everywhere */
+        -webkit-background-clip: text; /* Works on Chrome, Safari, Edge */
+        ; color:transparent; font-weight:800; font-size:2.3rem; text-shadow:0 2px 10px rgba(0,0,0,0.6); }
+        .auth-header p{ opacity:0.9; margin:8px 0 0; font-weight:300; font-size:1.1rem; color:#fff; }
+        .auth-form-container{ padding:30px; }
+        .btn-primary{ background:linear-gradient(135deg,var(--secondary),#0088cc); border:none; padding:16px; width:100%; border-radius:12px; }
+
+        /* FIX: make all texts and inputs visible */
+        body, label, .form-control, .form-check-label, 
+        .text-enhance, .form-switch, .terms-text {
+            color: #fff !important;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #fff !important;
+        }
+        .form-control::placeholder {
+            color: #ccc !important;
+        }
+  </style>
+</head>
+<body>
+    <!-- Back Button -->
+   <a href="{{ url_for('open')}}" class="back-button"><i class="fas fa-arrow-left"></i></a>
+
+    <!-- Starry Night Sky -->
+    <div class="night-sky" id="night-sky"></div>
+    <div class="moon"></div>
+
+    <!-- Animated Background with Cars -->
+    <div class="road-container">
+        <div class="city">
+            <div class="building building-1"></div>
+            <div class="building building-2"></div>
+            <div class="building building-3"></div>
+            <div class="building building-4"></div>
+            <div class="building building-5"></div>
+            <div class="building building-6"></div>
+            <div class="building building-7"></div>
+            <div class="building building-8"></div>
+            <div class="building building-9"></div>
+            <div class="building building-10"></div>
+        </div>
+        <div class="road"></div>
+        <div class="car car-1"><i class="fas fa-car"></i></div>
+        <div class="car car-2"><i class="fas fa-car"></i></div>
+        <div class="car car-3"><i class="fas fa-truck"></i></div>
+        <div class="car car-4"><i class="fas fa-motorcycle"></i></div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1><i class="fas fa-car me-2"></i>AK</h1>
+            <p>Vehicle Service Management System</p>
+        </div>
+
+        <div class="auth-form-container">
+            <h3 class="text-center mb-4 text-enhance">Welcome Back</h3>
+            
+            <form id="login-form" method="POST" action="/login">
+                <div class="alert">
+                    <i class="fas fa-info-circle me-2"></i>Sign in to access your account
+                </div>
+                
+                <div class="form-field-container">
+                    <div class="form-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input type="email" class="form-control" name="email" placeholder="Email address" required>
+                        <span class="floating-label text-enhance">Email address</span>
+                    </div>
+                </div>
+                
+                <div class="form-field-container">
+                    <div class="form-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" class="form-control" name="password" placeholder="Password" required>
+                        <span class="floating-label text-enhance">Password</span>
+                    </div>
+                    
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="remember-me">
+                    <label class="form-check-label text-enhance" for="remember-me">Remember me</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Login In</button>
+                
+                <div class="form-switch text-enhance">
+                    Don't have an account? <a href="{{'register'}}">Register here</a>
+                </div>
+                
+                <p class="terms-text text-enhance">By login in, you agree to our Terms of Service and Privacy Policy</p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Create stars
+        function createStars() {
+            const starsContainer = document.getElementById('night-sky');
+            for (let i = 0; i < 150; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                starsContainer.appendChild(star);
+            }
+        }
+        createStars();
+    </script>
+</body>
+</html>
